@@ -90,6 +90,32 @@ type IsPrimaryPayActionParams = {
     isSecondaryAction?: boolean;
 };
 
+function hasNonFailedFullPayAction(report: Report, reportActions?: ReportAction[]) {
+    if (report.isCancelledIOU) {
+        return false;
+    }
+
+    return (
+        reportActions?.some((reportAction) => {
+            if (!isMoneyRequestAction(reportAction)) {
+                return false;
+            }
+
+            const hasErrors = !!reportAction.errors && Object.keys(reportAction.errors).length > 0;
+            if (reportAction.pendingAction === CONST.RED_BRICK_ROAD_PENDING_ACTION.DELETE || hasErrors) {
+                return false;
+            }
+
+            const originalMessage = getOriginalMessage(reportAction);
+            return (
+                originalMessage?.type === CONST.IOU.REPORT_ACTION_TYPE.PAY &&
+                originalMessage.IOUReportID === report.reportID &&
+                !originalMessage.IOUDetails
+            );
+        }) ?? false
+    );
+}
+
 function isAddExpenseAction(report: Report, reportTransactions: Transaction[], isChatReportArchived: boolean) {
     if (isChatReportArchived) {
         return false;
@@ -197,6 +223,10 @@ function isPrimaryPayAction({
     if (isArchivedReport(reportNameValuePairs) || isChatReportArchived) {
         return false;
     }
+    if (hasNonFailedFullPayAction(report, reportActions)) {
+        return false;
+    }
+
     const isExpenseReport = isExpenseReportUtils(report);
     const isReportPayer = isPayer(currentUserAccountID, currentUserLogin, report, bankAccountList, policy, false);
     const arePaymentsEnabled = arePaymentsEnabledUtils(policy);

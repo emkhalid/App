@@ -73,6 +73,7 @@ const createTodosReportsAndTransactions = ({
                 bankAccountList,
                 policy,
                 reportNameValuePairs: reportNameValuePair,
+                reportActions,
             }) &&
             !hasOnlyNonReimbursableTransactions(report.reportID, reportTransactions)
         ) {
