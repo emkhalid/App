@@ -5092,6 +5092,22 @@ function getWithdrawalStatusDisplayText(value: SearchWithdrawalStatus | undefine
         .join(', ');
 }
 
+function normalizeExpenseReportDetailColumns(columns: SearchColumnType[], shouldShowCommentsColumn: boolean): SearchColumnType[] {
+    const deduplicatedColumns = [...new Set(columns)];
+    const columnsWithoutComments = deduplicatedColumns.filter((column) => column !== CONST.SEARCH.TABLE_COLUMNS.COMMENTS);
+
+    if (!shouldShowCommentsColumn) {
+        return columnsWithoutComments;
+    }
+
+    const totalColumnIndex = columnsWithoutComments.indexOf(CONST.SEARCH.TABLE_COLUMNS.TOTAL);
+    if (totalColumnIndex === -1) {
+        return [...columnsWithoutComments, CONST.SEARCH.TABLE_COLUMNS.COMMENTS];
+    }
+
+    return [...columnsWithoutComments.slice(0, totalColumnIndex), CONST.SEARCH.TABLE_COLUMNS.COMMENTS, ...columnsWithoutComments.slice(totalColumnIndex)];
+}
+
 /**
  * Determines what columns to show based on available data
  * @param isExpenseReportView: true when we are inside an expense report view, false if we're in the Reports page.
@@ -5302,10 +5318,6 @@ function getColumnsToShow({
                 }
             }
 
-            if (shouldShowCommentsColumn && !addedColumns.has(CONST.SEARCH.TABLE_COLUMNS.COMMENTS)) {
-                result.push(CONST.SEARCH.TABLE_COLUMNS.COMMENTS);
-            }
-
             // Don't return early — fall through to updateColumns to detect empty columns
             customResult = result;
         } else {
@@ -5484,10 +5496,12 @@ function getColumnsToShow({
             CONST.SEARCH.TABLE_COLUMNS.WITHDRAWAL_ID,
         ]);
 
-        return customResult.filter((col) => nonDataColumns.has(col) || columns[col]);
+        const filteredCustomColumns = customResult.filter((col) => nonDataColumns.has(col) || columns[col]);
+        return isExpenseReportView ? normalizeExpenseReportDetailColumns(filteredCustomColumns, shouldShowCommentsColumn) : filteredCustomColumns;
     }
 
-    return (Object.keys(columns) as SearchColumnType[]).filter((col) => columns[col]);
+    const visibleColumnsToShow = (Object.keys(columns) as SearchColumnType[]).filter((col) => columns[col]);
+    return isExpenseReportView ? normalizeExpenseReportDetailColumns(visibleColumnsToShow, shouldShowCommentsColumn) : visibleColumnsToShow;
 }
 
 /**
