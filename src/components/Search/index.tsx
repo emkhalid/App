@@ -325,6 +325,28 @@ function Search({
     const [offset, setOffset] = useState(0);
 
     const [transactions] = useOnyx(ONYXKEYS.COLLECTION.TRANSACTION);
+    const hydratedSearchData = useMemo(() => {
+        if (!searchResults?.data || !transactions) {
+            return searchResults?.data;
+        }
+
+        let didHydrateTransactions = false;
+        const nextData = {...searchResults.data};
+
+        Object.keys(nextData).forEach((key) => {
+            if (!key.startsWith(ONYXKEYS.COLLECTION.TRANSACTION) || !transactions[key]) {
+                return;
+            }
+
+            nextData[key as keyof typeof nextData] = {
+                ...(nextData[key as keyof typeof nextData] as Transaction),
+                ...(transactions[key] as Transaction),
+            };
+            didHydrateTransactions = true;
+        });
+
+        return didHydrateTransactions ? nextData : searchResults.data;
+    }, [searchResults?.data, transactions]);
     const [introSelected] = useOnyx(ONYXKEYS.NVP_INTRO_SELECTED);
     const [betas] = useOnyx(ONYXKEYS.BETAS);
     const previousTransactions = usePrevious(transactions);
@@ -547,7 +569,7 @@ function Search({
     const prevIsSearchResultEmpty = usePrevious(isSearchResultsEmpty);
 
     const {baseFilteredData, filteredDataLength, allDataLength, hasDeletedTransaction} = useMemo(() => {
-        if (shouldDeferHeavySearchWork || searchResults === undefined || !isDataLoaded || !searchResults.data) {
+        if (shouldDeferHeavySearchWork || searchResults === undefined || !isDataLoaded || !hydratedSearchData) {
             return {baseFilteredData: [], filteredDataLength: 0, allDataLength: 0, hasDeletedTransaction: false};
         }
 
@@ -560,7 +582,7 @@ function Search({
 
         const [filteredData1, allLength, hasDeletedTransactionFromSections] = getSections({
             type,
-            data: searchResults.data,
+            data: hydratedSearchData,
             policies,
             currentAccountID: accountID,
             currentUserEmail: email ?? '',
@@ -597,6 +619,7 @@ function Search({
         isDataLoaded,
         shouldDeferHeavySearchWork,
         searchResults,
+        hydratedSearchData,
         type,
         archivedReportsIdSet,
         translate,
@@ -1258,11 +1281,11 @@ function Search({
     const shouldUseStrictDefaultExpenseColumns = currentSearchKey === CONST.SEARCH.SEARCH_KEYS.EXPENSES && isDefaultExpensesQuery(queryJSON);
 
     const computedColumns = useMemo(() => {
-        if (!searchResults?.data) {
+        if (!hydratedSearchData) {
             return getEmptyArray<SearchColumnType>();
         }
-        return getColumnsToShow({currentAccountID: accountID, data: searchResults?.data, visibleColumns, type: searchDataType, groupBy: validGroupBy, shouldUseStrictDefaultExpenseColumns});
-    }, [accountID, searchResults?.data, searchDataType, visibleColumns, validGroupBy, shouldUseStrictDefaultExpenseColumns]);
+        return getColumnsToShow({currentAccountID: accountID, data: hydratedSearchData, visibleColumns, type: searchDataType, groupBy: validGroupBy, shouldUseStrictDefaultExpenseColumns});
+    }, [accountID, hydratedSearchData, searchDataType, visibleColumns, validGroupBy, shouldUseStrictDefaultExpenseColumns]);
 
     // getColumnsToShow allocates a fresh array on every call; preserve the previous reference
     // when contents are equal so downstream consumers don't re-render on Onyx snapshot churn
@@ -1606,8 +1629,8 @@ function Search({
 
     const yearIndicators = useMemo(
         () =>
-            searchResults?.data
-                ? shouldShowYearUtil(searchResults.data, isExpenseReportType ?? false, undefined, type === CONST.SEARCH.DATA_TYPES.EXPENSE)
+            hydratedSearchData
+                ? shouldShowYearUtil(hydratedSearchData, isExpenseReportType ?? false, undefined, type === CONST.SEARCH.DATA_TYPES.EXPENSE)
                 : {
                       shouldShowYearCreated: false,
                       shouldShowYearSubmitted: false,
@@ -1616,12 +1639,12 @@ function Search({
                       shouldShowYearExported: false,
                       shouldShowYearWithdrawn: false,
                   },
-        [searchResults?.data, isExpenseReportType, type],
+        [hydratedSearchData, isExpenseReportType, type],
     );
 
     const amountIndicators = useMemo(
-        () => (searchResults?.data ? getWideAmountIndicators(searchResults.data) : {shouldShowAmountInWideColumn: false, shouldShowTaxAmountInWideColumn: false}),
-        [searchResults?.data],
+        () => (hydratedSearchData ? getWideAmountIndicators(hydratedSearchData) : {shouldShowAmountInWideColumn: false, shouldShowTaxAmountInWideColumn: false}),
+        [hydratedSearchData],
     );
 
     const onSortPress = useCallback(

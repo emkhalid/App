@@ -47,6 +47,7 @@ import ReceiptCell from './DataCells/ReceiptCell';
 import TagCell from './DataCells/TagCell';
 import TaxCell from './DataCells/TaxCell';
 import TotalCell from './DataCells/TotalCell';
+import TransactionCreatedDateCell from './DataCells/TransactionCreatedDateCell';
 import TypeCell from './DataCells/TypeCell';
 import DeferredTransactionItemRowRBR from './DeferredTransactionItemRowRBR';
 import type {TransactionItemRowProps, TransactionItemRowWideComputedData} from './types';
@@ -108,7 +109,6 @@ function TransactionItemRowWide({
     shouldShowAttendees,
     totalPerAttendee,
     transactionThreadReportID,
-    createdAt,
 }: TransactionItemRowWideProps) {
     const styles = useThemeStyles();
     const {translate} = useLocalize();
@@ -178,11 +178,11 @@ function TransactionItemRowWide({
                         key={column}
                         style={[StyleUtils.getReportTableColumnStyles(CONST.SEARCH.TABLE_COLUMNS.DATE, {isDateColumnWide})]}
                     >
-                        <DateCell
+                        <TransactionCreatedDateCell
                             canEdit={canEditDate}
-                            date={createdAt}
+                            transactionItem={transactionItem}
                             onSave={onEditDate}
-                            showTooltip={shouldShowTooltip}
+                            shouldShowTooltip={shouldShowTooltip}
                             isLargeScreenWidth
                         />
                     </View>

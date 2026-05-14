@@ -13,7 +13,7 @@
  *    Do NOT add new subscriptions unless absolutely necessary for correctness.
  */
 import {useFocusEffect} from '@react-navigation/native';
-import React, {useCallback, useRef, useState} from 'react';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {FlatList, View} from 'react-native';
 import type {ListRenderItemInfo, StyleProp, ViewStyle} from 'react-native';
 import Checkbox from '@components/Checkbox';
@@ -24,6 +24,7 @@ import StatusBadge from '@components/StatusBadge';
 import TransactionItemRow from '@components/TransactionItemRow';
 import {useCurrencyListActions} from '@hooks/useCurrencyList';
 import useLocalize from '@hooks/useLocalize';
+import useOnyx from '@hooks/useOnyx';
 import useStyleUtils from '@hooks/useStyleUtils';
 import useTheme from '@hooks/useTheme';
 import useThemeStyles from '@hooks/useThemeStyles';
@@ -32,8 +33,9 @@ import Navigation from '@libs/Navigation/Navigation';
 import {getReportStatusColorStyle, getReportStatusTranslation, isOneTransactionReport} from '@libs/ReportUtils';
 import {createAndOpenSearchTransactionThread, getSections, getSortedSections, getValidGroupBy} from '@libs/SearchUIUtils';
 import CONST from '@src/CONST';
+import ONYXKEYS from '@src/ONYXKEYS';
 import ROUTES from '@src/ROUTES';
-import type {SearchResults} from '@src/types/onyx';
+import type {SearchResults, Transaction} from '@src/types/onyx';
 import type {TransactionListItemType} from './SearchList/ListItem/types';
 import UserInfoCellsWithArrow from './SearchList/ListItem/UserInfoCellsWithArrow';
 import SearchTableHeader from './SearchTableHeader';
@@ -80,7 +82,29 @@ function SearchStaticList({
 
     const {type, status, sortBy, sortOrder, groupBy} = queryJSON;
     const validGroupBy = getValidGroupBy(groupBy);
-    const searchData = searchResults?.data;
+    const [transactions] = useOnyx(ONYXKEYS.COLLECTION.TRANSACTION);
+    const searchData = useMemo(() => {
+        if (!searchResults?.data || !transactions) {
+            return searchResults?.data;
+        }
+
+        let didHydrateTransactions = false;
+        const nextData = {...searchResults.data};
+
+        Object.keys(nextData).forEach((key) => {
+            if (!key.startsWith(ONYXKEYS.COLLECTION.TRANSACTION) || !transactions[key]) {
+                return;
+            }
+
+            nextData[key as keyof typeof nextData] = {
+                ...(nextData[key as keyof typeof nextData] as Transaction),
+                ...(transactions[key] as Transaction),
+            };
+            didHydrateTransactions = true;
+        });
+
+        return didHydrateTransactions ? nextData : searchResults.data;
+    }, [searchResults?.data, transactions]);
 
     const sortedData = (() => {
         if (!searchData) {

@@ -3,7 +3,6 @@ import {View} from 'react-native';
 import Checkbox from '@components/Checkbox';
 import Icon from '@components/Icon';
 import RadioButton from '@components/RadioButton';
-import DateCell from '@components/Search/SearchList/ListItem/DateCell';
 import {useMemoizedLazyExpensifyIcons} from '@hooks/useLazyAsset';
 import useStyleUtils from '@hooks/useStyleUtils';
 import useTheme from '@hooks/useTheme';
@@ -14,6 +13,7 @@ import DeferredChatBubbleCell from './DataCells/DeferredChatBubbleCell';
 import MerchantOrDescriptionCell from './DataCells/MerchantCell';
 import ReceiptCell from './DataCells/ReceiptCell';
 import TotalCell from './DataCells/TotalCell';
+import TransactionCreatedDateCell from './DataCells/TransactionCreatedDateCell';
 import TypeCell from './DataCells/TypeCell';
 import DeferredTransactionItemRowRBR from './DeferredTransactionItemRowRBR';
 import type {TransactionItemRowNarrowComputedData, TransactionItemRowProps} from './types';
@@ -64,7 +64,6 @@ function TransactionItemRowNarrow({
     missingFieldError,
     transactionThreadReportID,
     categoryForDisplay,
-    createdAt,
     shouldRenderChatBubbleCell,
 }: TransactionItemRowNarrowProps) {
     const styles = useThemeStyles();
@@ -124,9 +123,9 @@ function TransactionItemRowNarrow({
                             </View>
                         </View>
                         <View style={[styles.flexRow, styles.alignItemsCenter, styles.justifyContentBetween, styles.gap2]}>
-                            <DateCell
-                                date={createdAt}
-                                showTooltip={shouldShowTooltip}
+                            <TransactionCreatedDateCell
+                                transactionItem={transactionItem}
+                                shouldShowTooltip={shouldShowTooltip}
                                 isLargeScreenWidth={false}
                                 suffixText={categoryForDisplay}
                             />

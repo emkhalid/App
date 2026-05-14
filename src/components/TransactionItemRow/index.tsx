@@ -14,7 +14,6 @@ import {
     getDescription,
     getExchangeRate,
     getMerchant,
-    getCreated as getTransactionCreated,
     hasMissingSmartscanFields,
     isAmountMissing,
     isMerchantMissing,
@@ -95,7 +94,6 @@ function TransactionItemRow({
 }: TransactionItemRowProps) {
     const styles = useThemeStyles();
     const {translate} = useLocalize();
-    const createdAt = getTransactionCreated(transactionItem);
     const currentUserPersonalDetails = useCurrentUserPersonalDetails();
     const transactionThreadReportID = reportActions ? getIOUActionForTransactionID(reportActions, transactionItem.transactionID)?.childReportID : undefined;
 
@@ -162,7 +160,6 @@ function TransactionItemRow({
                 merchantOrDescription={merchantOrDescription}
                 missingFieldError={missingFieldError}
                 categoryForDisplay={categoryForDisplay}
-                createdAt={createdAt}
                 transactionThreadReportID={transactionThreadReportID}
                 shouldRenderChatBubbleCell={shouldRenderChatBubbleCell}
             />
@@ -240,7 +237,6 @@ function TransactionItemRow({
             transactionAttendees={transactionAttendees}
             shouldShowAttendees={shouldShowAttendees}
             totalPerAttendee={!attendeesCount || totalAmount === undefined ? undefined : totalAmount / attendeesCount}
-            createdAt={createdAt}
             transactionThreadReportID={transactionThreadReportID}
         />
     );
