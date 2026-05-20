@@ -1,6 +1,6 @@
 import type {OnyxEntry} from 'react-native-onyx';
 import CONST from '@src/CONST';
-import type {OnboardingPurpose} from '@src/types/onyx';
+import type {IntroSelected, OnboardingPurpose} from '@src/types/onyx';
 
 /**
  * Returns true when the onboarding choice is one of the "track" variants
@@ -13,4 +13,17 @@ function isTrackOnboardingChoice(choice: OnyxEntry<OnboardingPurpose>): choice i
     return choice === CONST.ONBOARDING_CHOICES.TRACK_BUSINESS || choice === CONST.ONBOARDING_CHOICES.TRACK_PERSONAL || choice === CONST.ONBOARDING_CHOICES.PERSONAL_SPEND;
 }
 
+function isSupportedPendingInviteOnboarding(introSelected: OnyxEntry<IntroSelected>): boolean {
+    if (!introSelected?.inviteType || introSelected.isInviteOnboardingComplete) {
+        return false;
+    }
+
+    const isInviteIOUorInvoice = introSelected.inviteType === CONST.ONBOARDING_INVITE_TYPES.IOU || introSelected.inviteType === CONST.ONBOARDING_INVITE_TYPES.INVOICE;
+    const isInviteChoiceCorrect =
+        introSelected.choice === CONST.ONBOARDING_CHOICES.ADMIN || introSelected.choice === CONST.ONBOARDING_CHOICES.SUBMIT || introSelected.choice === CONST.ONBOARDING_CHOICES.CHAT_SPLIT;
+
+    return isInviteChoiceCorrect && !isInviteIOUorInvoice;
+}
+
 export default isTrackOnboardingChoice;
+export {isSupportedPendingInviteOnboarding};
