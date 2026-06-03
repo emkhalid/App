@@ -104,6 +104,7 @@ function TransactionListItem<TItem extends ListItem>({
         hasParentReportAction: !!parentReportAction,
         hasTransactionThreadReport: !!transactionThreadReport,
     };
+    const resolvedTransactionItem = {...transactionItem, ...(transaction ?? {})} as TItem;
 
     // Prefer live Onyx policy data over snapshot to ensure fresh policy settings
     // like isAttendeeTrackingEnabled is not missing
@@ -161,7 +162,7 @@ function TransactionListItem<TItem extends ListItem>({
     };
 
     const sharedProps = {
-        item,
+        item: resolvedTransactionItem,
         isDeletedTransaction,
         isFocused,
         showTooltip,

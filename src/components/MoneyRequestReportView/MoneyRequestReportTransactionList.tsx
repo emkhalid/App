@@ -63,7 +63,7 @@ import type {SortableColumnName} from '@libs/ReportUtils';
 import {compareValues, getColumnsToShow, getTableMinWidth, hasFlexColumn, isTransactionAmountTooLong, isTransactionTaxAmountTooLong} from '@libs/SearchUIUtils';
 import {getPendingSubmitFollowUpAction} from '@libs/telemetry/submitFollowUpAction';
 import {transactionHasRBR} from '@libs/TransactionPreviewUtils';
-import {getTransactionPendingAction, getVisibleTransactionViolations, isTransactionPendingDelete, shouldShowExpenseBreakdown} from '@libs/TransactionUtils';
+import {getTransactionPendingAction, getVisibleTransactionViolations, isScanning, isTransactionPendingDelete, shouldShowExpenseBreakdown} from '@libs/TransactionUtils';
 import shouldShowTransactionYear from '@libs/TransactionUtils/shouldShowTransactionYear';
 import isReportOpenInSuperWideRHP from '@navigation/helpers/isReportOpenInSuperWideRHP';
 import Navigation from '@navigation/Navigation';
@@ -337,7 +337,7 @@ function MoneyRequestReportTransactionList({
     }, [isDefaultSort, allTransactionViolations, currentUserDetails?.login, currentUserDetails?.accountID, transactions, report, policy, reportActionsMap]);
 
     const sortedTransactions: TransactionWithOptionalHighlight[] = useMemo(() => {
-        return [...transactions].sort((a, b) => {
+        const normallySortedTransactions = [...transactions].sort((a, b) => {
             // When on default sort (Date/ASC), prioritize RBR-flagged transactions
             if (rbrTransactionIDs) {
                 const aHasRBR = rbrTransactionIDs.has(a.transactionID);
@@ -348,6 +348,13 @@ function MoneyRequestReportTransactionList({
             }
             return compareValues(getTransactionSortValue(a, sortBy, report, policy), getTransactionSortValue(b, sortBy, report, policy), sortOrder, sortBy, localeCompare, true);
         });
+
+        const scanningTransactions = normallySortedTransactions.filter(isScanning);
+        if (scanningTransactions.length === 0 || scanningTransactions.length === normallySortedTransactions.length) {
+            return normallySortedTransactions;
+        }
+
+        return [...scanningTransactions, ...normallySortedTransactions.filter((transaction) => !isScanning(transaction))];
     }, [sortBy, sortOrder, transactions, localeCompare, report, policy, rbrTransactionIDs]);
 
     const resolvedTransactions = useMemo(() => resolveTransactionCardFields(sortedTransactions, cardList, translate), [sortedTransactions, cardList, translate]);

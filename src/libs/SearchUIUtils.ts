@@ -3741,6 +3741,18 @@ function getSortedTransactionData(
         return data;
     }
 
+    const scanningTransactions = data.filter(isScanning);
+    if (scanningTransactions.length > 0 && scanningTransactions.length < data.length) {
+        const nonScanningTransactions = data.filter((transaction) => !isScanning(transaction));
+        data.splice(
+            0,
+            data.length,
+            ...getSortedTransactionData(scanningTransactions, localeCompare, translate, sortBy, sortOrder),
+            ...getSortedTransactionData(nonScanningTransactions, localeCompare, translate, sortBy, sortOrder),
+        );
+        return data;
+    }
+
     if (sortBy === CONST.SEARCH.TABLE_COLUMNS.REPORT_ID || sortBy === CONST.SEARCH.TABLE_COLUMNS.BASE_62_REPORT_ID) {
         return data.sort((a, b) => {
             const aValue = a.reportID;
