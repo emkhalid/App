@@ -443,7 +443,13 @@ function SearchAutocompleteList({
 
         const pushSection = (section: Section<AutocompleteListItem>) => {
             nextSections.push(section);
-            nextSuggestionsCount += section.data.filter((item) => item.keyForList !== CONST.SEARCH.SEARCH_ROUTER_ITEM_TYPE.FIND_ITEM).length;
+            nextSuggestionsCount += section.data.filter((item) => {
+                if ('searchItemType' in item && item.searchItemType === CONST.SEARCH.SEARCH_ROUTER_ITEM_TYPE.NAVIGATE) {
+                    return false;
+                }
+
+                return item.keyForList !== CONST.SEARCH.SEARCH_ROUTER_ITEM_TYPE.FIND_ITEM;
+            }).length;
         };
 
         if (searchQueryItems && searchQueryItems.length > 0) {
@@ -669,6 +675,7 @@ function SearchAutocompleteList({
             shouldHighlightInitiallyFocusedItem={!shouldUseNarrowLayout}
             shouldScrollToFocusedIndex={!isInitialRender}
             disableKeyboardShortcuts={!shouldSubscribeToArrowKeyEvents}
+            searchValueForFocusSync={autocompleteQueryValue}
             addBottomSafeAreaPadding
             onLayout={() => {
                 endSpan(CONST.TELEMETRY.SPAN_SEARCH_ROUTER_LIST_RENDER);
