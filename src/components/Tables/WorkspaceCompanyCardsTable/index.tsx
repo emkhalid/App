@@ -131,7 +131,7 @@ function WorkspaceCompanyCardsTable({
     const isLoadingFeed =
         !hasCards && ((!feedName && isInitiallyLoadingFeeds) || !isPolicyLoaded || (!isNoFeed && isLoadingOnyxValue(lastSelectedFeedMetadata)) || !!selectedFeedStatus?.isLoading);
     const isLoadingCards = !hasCards ? isLoadingOnyxValue(cardListMetadata) : false;
-    const isLoadingPage = !isOffline && !hasCards && (isLoadingFeed || isLoadingOnyxValue(personalDetailsMetadata) || areWorkspaceCardFeedsLoading);
+    const isLoadingPage = !isOffline && !hasCards && !isNoFeed && (isLoadingFeed || isLoadingOnyxValue(personalDetailsMetadata) || areWorkspaceCardFeedsLoading);
 
     const isLoading = isLoadingPage || isLoadingFeed;
 
