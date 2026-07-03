@@ -26,6 +26,8 @@ import useThemeStyles from '@hooks/useThemeStyles';
 import CONST from '@src/CONST';
 import type {FlattenedItem, ListItem, SelectionListWithSectionsProps} from './types';
 
+type RowSelectionSource = 'keyboard' | 'pointer';
+
 function getItemType<TItem extends ListItem>(item: FlattenedItem<TItem>): ValueOf<typeof CONST.SECTION_LIST_ITEM_TYPE> {
     return item?.type ?? CONST.SECTION_LIST_ITEM_TYPE.ROW;
 }
@@ -119,7 +121,7 @@ function BaseSelectionListWithSections<TItem extends ListItem>({
         return item as TItem;
     };
 
-    const selectRow = (item: TItem, indexToFocus?: number) => {
+    const selectRow = (item: TItem, indexToFocus?: number, source?: RowSelectionSource) => {
         if (!isScreenFocused) {
             return;
         }
@@ -133,7 +135,7 @@ function BaseSelectionListWithSections<TItem extends ListItem>({
             }
         }
         if (shouldUpdateFocusedIndex && typeof indexToFocus === 'number') {
-            setFocusedIndexWithoutScrollOnChange(indexToFocus);
+            setFocusedIndexWithoutScrollOnChange(source === 'pointer' && shouldShowTextInput ? -1 : indexToFocus);
         }
         onSelectRow(item);
 
@@ -147,7 +149,7 @@ function BaseSelectionListWithSections<TItem extends ListItem>({
         if (!focusedItem || focusedItem.isInteractive === false) {
             return;
         }
-        selectRow(focusedItem);
+        selectRow(focusedItem, undefined, 'keyboard');
     };
 
     const clearInputAfterSelect = () => {

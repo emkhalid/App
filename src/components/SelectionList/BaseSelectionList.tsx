@@ -25,6 +25,8 @@ import ListItemRenderer from './ListItem/ListItemRenderer';
 import type {DataDetailsType, ListItem, SelectionListProps} from './types';
 import {getListboxRole} from './utils/getListboxRole';
 
+type RowSelectionSource = 'keyboard' | 'pointer';
+
 const ANIMATED_HIGHLIGHT_DURATION =
     CONST.ANIMATED_HIGHLIGHT_ENTRY_DELAY +
     CONST.ANIMATED_HIGHLIGHT_ENTRY_DURATION +
@@ -183,7 +185,7 @@ function BaseSelectionList<TItem extends ListItem>({
     const syncedSearchValue = searchValueForFocusSync ?? textInputOptions?.value;
 
     const selectRow = useCallback(
-        (item: TItem, indexToFocus?: number) => {
+        (item: TItem, indexToFocus?: number, source?: RowSelectionSource) => {
             if (!isFocused) {
                 return;
             }
@@ -198,7 +200,7 @@ function BaseSelectionList<TItem extends ListItem>({
                 }
             }
             if (shouldUpdateFocusedIndex && typeof indexToFocus === 'number') {
-                setFocusedIndexWithoutScrollOnChange(indexToFocus);
+                setFocusedIndexWithoutScrollOnChange(source === 'pointer' && shouldShowTextInput ? -1 : indexToFocus);
             }
             onSelectRow(item);
 
@@ -237,7 +239,7 @@ function BaseSelectionList<TItem extends ListItem>({
         if (!focusedOption || focusedOption.isInteractive === false) {
             return;
         }
-        selectRow(focusedOption);
+        selectRow(focusedOption, undefined, 'keyboard');
     };
 
     useSelectionListShortcuts({

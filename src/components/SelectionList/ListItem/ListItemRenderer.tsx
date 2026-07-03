@@ -4,14 +4,17 @@ import type {SelectionListProps} from '@components/SelectionList/types';
 import type useArrowKeyFocusManager from '@hooks/useArrowKeyFocusManager';
 import type useSingleExecution from '@hooks/useSingleExecution';
 import {isMobileChrome} from '@libs/Browser';
+import type {ModifiedMouseEvent} from '@libs/Navigation/helpers/openInternalRouteInNewTab';
 import {isTransactionGroupListItemType} from '@libs/SearchUIUtils';
 import type {ExtendedTargetedEvent, ListItem, SelectableListItemProps} from './types';
+
+type RowSelectionSource = 'keyboard' | 'pointer';
 
 type ListItemRendererProps<TItem extends ListItem> = Omit<SelectableListItemProps<TItem>, 'onSelectRow' | 'keyForList'> &
     Pick<SelectionListProps<TItem>, 'ListItem' | 'shouldIgnoreFocus' | 'shouldSingleExecuteRowSelect'> & {
         index: number;
         normalizedIndex?: number;
-        selectRow: (item: TItem, indexToFocus?: number) => void;
+        selectRow: (item: TItem, indexToFocus?: number, source?: RowSelectionSource) => void;
         setFocusedIndex: ReturnType<typeof useArrowKeyFocusManager>[1];
         singleExecution: ReturnType<typeof useSingleExecution>['singleExecution'];
         titleStyles?: StyleProp<TextStyle>;
@@ -73,11 +76,12 @@ function ListItemRenderer<TItem extends ListItem>({
                 showTooltip={showTooltip}
                 canSelectMultiple={canSelectMultiple}
                 onLongPressRow={onLongPressRow}
-                onSelectRow={() => {
+                onSelectRow={(_item: TItem, _transactionPreviewData, event?: ModifiedMouseEvent) => {
+                    const source = !event || event.key === 'Enter' ? 'keyboard' : 'pointer';
                     if (shouldSingleExecuteRowSelect) {
-                        singleExecution(() => selectRow(item, index))();
+                        singleExecution(() => selectRow(item, index, source))();
                     } else {
-                        selectRow(item, index);
+                        selectRow(item, index, source);
                     }
                 }}
                 onSelectionButtonPress={handleOnSelectionButtonPress()}
