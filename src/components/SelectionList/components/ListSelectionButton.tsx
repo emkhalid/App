@@ -1,5 +1,6 @@
+import type {TransactionListItemType} from '@components/Search/SearchList/ListItem/types';
 import SelectionButton from '@components/SelectionButton';
-import type {ListItem} from '@components/SelectionList/ListItem/types';
+import type {ListItem, ModifiedMouseEvent} from '@components/SelectionList/ListItem/types';
 
 import CONST from '@src/CONST';
 
@@ -12,7 +13,7 @@ type ListSelectionButtonProps<TItem extends ListItem> = {
     item: TItem;
 
     /** Callback to fire when the item is pressed */
-    onSelectRow: (item: TItem) => void;
+    onSelectRow: (item: TItem, itemTransactions?: TransactionListItemType[], event?: ModifiedMouseEvent) => void;
 
     /** Custom accessibility label */
     accessibilityLabel?: string;
@@ -56,7 +57,7 @@ function ListSelectionButton<TItem extends ListItem>({
             role={role}
             accessibilityLabel={label}
             isChecked={item.isSelected ?? false}
-            onPress={() => onSelectRow(item)}
+            onPress={(event) => onSelectRow(item, undefined, event)}
             disabled={disabled}
             style={style}
             containerStyle={containerStyle}

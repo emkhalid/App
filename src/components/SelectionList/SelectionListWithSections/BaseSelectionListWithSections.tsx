@@ -102,7 +102,7 @@ function BaseSelectionListWithSectionsImpl({
     const {scrollToIndex, debouncedScrollToIndex} = useSelectionListScroll(listRef, flattenedData);
     const {containerRef, trackScrollOffset, scrollInputIntoView} = useScrollToFocusedInput(listRef, isKeyboardShown);
 
-    const {focusedIndex, setFocusedIndex, isKeyboardNavigating, setHasKeyBeenPressed} = useSelectionListKeyboardFocus({
+    const {focusedIndex, setFocusedIndex, isKeyboardNavigating, setHasKeyBeenPressed, resetKeyboardNavigation} = useSelectionListKeyboardFocus({
         initialFocusedIndex,
         maxIndex: flattenedData.length - 1,
         disabledIndexes,
@@ -200,7 +200,7 @@ function BaseSelectionListWithSectionsImpl({
 
     const syncedSearchValue = searchValueForFocusSync ?? textInputOptions?.value;
 
-    useSelectionListShortcuts({
+    const submitOrSelectFocusedItem = useSelectionListShortcuts({
         selectFocusedItem,
         getFocusedOption: getFocusedItem,
         confirmButtonOptions,
@@ -209,6 +209,9 @@ function BaseSelectionListWithSectionsImpl({
         disableKeyboardShortcuts,
         shouldStopPropagation,
         shouldBubble: itemsCount > 0 && !getFocusedItem(),
+        isKeyboardNavigating,
+        searchValue: syncedSearchValue,
+        isTextInputFocusedRef,
     });
 
     useSelectedItemFocusSync({
@@ -244,7 +247,7 @@ function BaseSelectionListWithSectionsImpl({
                 onKeyPress={textInputKeyPress}
                 accessibilityLabel={textInputOptions?.label}
                 options={textInputOptions}
-                onSubmit={selectFocusedItem}
+                onSubmit={submitOrSelectFocusedItem}
                 dataLength={itemsCount}
                 isLoading={isLoadingNewOptions}
                 onFocusChange={(v: boolean) => (isTextInputFocusedRef.current = v)}
@@ -292,6 +295,7 @@ function BaseSelectionListWithSectionsImpl({
                         onDismissError={onDismissError}
                         rightHandSideComponent={rightHandSideComponent}
                         setFocusedIndex={setFocusedIndex}
+                        resetKeyboardNavigation={resetKeyboardNavigation}
                         singleExecution={singleExecution}
                         shouldSyncFocus={!isTextInputFocusedRef.current && isKeyboardNavigating}
                         shouldIgnoreFocus={shouldIgnoreFocus}

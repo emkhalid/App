@@ -59,12 +59,13 @@ function useSearchFocusSync<TItem extends ListItem, TData = TItem>({
         const searchChanged = prevSearchValue !== searchValue;
         const selectedOptionsChanged = selectedOptionsCount !== prevSelectedOptionsCount;
         const selectionChangedByClicking = !searchChanged && selectedOptionsChanged && shouldUpdateFocusedIndex;
+        const searchResultsChanged = !!searchValue && data.length > 0 && data.length !== prevItemsLength;
 
         // Do not change focus if:
         // 1. Input value is the same or
         // 2. Data length is 0 or
         // 3. Selection changed via user interaction (not filtering), so focus is handled externally
-        if ((!searchChanged && !selectedOptionsChanged) || data.length === 0 || selectionChangedByClicking) {
+        if ((!searchChanged && !selectedOptionsChanged && !searchResultsChanged) || data.length === 0 || selectionChangedByClicking) {
             return;
         }
 

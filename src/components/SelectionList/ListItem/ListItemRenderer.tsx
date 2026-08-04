@@ -6,11 +6,13 @@ import type useSingleExecution from '@hooks/useSingleExecution';
 import {isMobileChrome} from '@libs/Browser';
 import {isTransactionGroupListItemType} from '@libs/SearchUIUtils';
 
+import CONST from '@src/CONST';
+
 import type {NativeSyntheticEvent, StyleProp, TextStyle, ViewStyle} from 'react-native';
 
 import React from 'react';
 
-import type {ExtendedTargetedEvent, ListItem, SelectableListItemProps} from './types';
+import type {ExtendedTargetedEvent, ListItem, ModifiedMouseEvent, SelectableListItemProps} from './types';
 
 type ListItemRendererProps<TItem extends ListItem> = Omit<SelectableListItemProps<TItem>, 'onSelectRow' | 'keyForList'> &
     Pick<SelectionListProps<TItem>, 'ListItem' | 'shouldIgnoreFocus' | 'shouldSingleExecuteRowSelect'> & {
@@ -18,6 +20,7 @@ type ListItemRendererProps<TItem extends ListItem> = Omit<SelectableListItemProp
         normalizedIndex?: number;
         selectRow: (item: TItem, indexToFocus?: number) => void;
         setFocusedIndex: ReturnType<typeof useArrowKeyFocusManager>[1];
+        resetKeyboardNavigation?: () => void;
         singleExecution: ReturnType<typeof useSingleExecution>['singleExecution'];
         titleStyles?: StyleProp<TextStyle>;
         titleContainerStyles?: StyleProp<ViewStyle>;
@@ -46,6 +49,7 @@ function ListItemRenderer<TItem extends ListItem>({
     alternateTextNumberOfLines,
     shouldIgnoreFocus,
     setFocusedIndex,
+    resetKeyboardNavigation,
     shouldSyncFocus,
     titleNumberOfLines,
     wrapperStyle,
@@ -61,11 +65,26 @@ function ListItemRenderer<TItem extends ListItem>({
     isLastItem,
     shouldPreventEnterKeySubmit = true,
 }: ListItemRendererProps<TItem>) {
-    const handleOnSelectionButtonPress = () => {
-        if (isTransactionGroupListItemType(item)) {
-            return onSelectionButtonPress;
+    const resetKeyboardNavigationForPointerEvent = (event?: ModifiedMouseEvent) => {
+        if (event && event.key !== CONST.KEYBOARD_SHORTCUTS.ENTER.shortcutKey) {
+            resetKeyboardNavigation?.();
         }
-        return onSelectionButtonPress ? () => onSelectionButtonPress(item) : undefined;
+    };
+
+    const handleOnSelectionButtonPress = () => {
+        if (!onSelectionButtonPress) {
+            return undefined;
+        }
+        if (isTransactionGroupListItemType(item)) {
+            return (pressedItem: TItem, itemTransactions?: Parameters<typeof onSelectionButtonPress>[1], event?: ModifiedMouseEvent) => {
+                resetKeyboardNavigationForPointerEvent(event);
+                onSelectionButtonPress(pressedItem, itemTransactions);
+            };
+        }
+        return (_pressedItem: TItem, _itemTransactions?: Parameters<typeof onSelectionButtonPress>[1], event?: ModifiedMouseEvent) => {
+            resetKeyboardNavigationForPointerEvent(event);
+            onSelectionButtonPress(item);
+        };
     };
 
     return (
@@ -78,7 +97,8 @@ function ListItemRenderer<TItem extends ListItem>({
                 showTooltip={showTooltip}
                 canSelectMultiple={canSelectMultiple}
                 onLongPressRow={onLongPressRow}
-                onSelectRow={() => {
+                onSelectRow={(_item, _transactionPreviewData, event) => {
+                    resetKeyboardNavigationForPointerEvent(event);
                     if (shouldSingleExecuteRowSelect) {
                         singleExecution(() => selectRow(item, index))();
                     } else {

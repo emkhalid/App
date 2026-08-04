@@ -168,7 +168,7 @@ function BaseSelectionListImpl({
         return {data, allSelected, someSelected, selectedOptions, disabledIndexes, disabledArrowKeyIndexes};
     }, [canSelectMultiple, data, isDisabled, isItemSelected]);
 
-    const {focusedIndex, setFocusedIndex, isKeyboardNavigating, setHasKeyBeenPressed} = useSelectionListKeyboardFocus({
+    const {focusedIndex, setFocusedIndex, isKeyboardNavigating, setHasKeyBeenPressed, resetKeyboardNavigation} = useSelectionListKeyboardFocus({
         initialFocusedIndex,
         maxIndex: data.length - 1,
         disabledIndexes: dataDetails.disabledArrowKeyIndexes,
@@ -248,7 +248,7 @@ function BaseSelectionListImpl({
         selectRow(focusedOption);
     };
 
-    useSelectionListShortcuts({
+    const submitOrSelectFocusedOption = useSelectionListShortcuts({
         selectFocusedItem: selectFocusedOption,
         getFocusedOption: () => focusedOption,
         confirmButtonOptions,
@@ -257,6 +257,9 @@ function BaseSelectionListImpl({
         disableKeyboardShortcuts,
         shouldStopPropagation,
         shouldBubble: !focusedOption,
+        isKeyboardNavigating,
+        searchValue: syncedSearchValue,
+        isTextInputFocusedRef,
     });
 
     const textInputComponent = ({shouldBeInsideList}: {shouldBeInsideList?: boolean}) => {
@@ -272,7 +275,7 @@ function BaseSelectionListImpl({
                 onKeyPress={textInputKeyPress}
                 accessibilityLabel={textInputOptions?.label}
                 options={textInputOptions}
-                onSubmit={selectFocusedOption}
+                onSubmit={submitOrSelectFocusedOption}
                 dataLength={data.length}
                 isLoading={isLoadingNewOptions}
                 onFocusChange={(v: boolean) => (isTextInputFocusedRef.current = v)}
@@ -300,6 +303,7 @@ function BaseSelectionListImpl({
                     ...item,
                 }}
                 setFocusedIndex={setFocusedIndex}
+                resetKeyboardNavigation={resetKeyboardNavigation}
                 index={index}
                 isFocused={isItemFocused}
                 isFocusVisible={isItemVisuallyFocused}

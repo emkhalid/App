@@ -27,6 +27,7 @@ type UseSelectionListKeyboardFocusResult = {
     setFocusedIndex: (index: number, shouldScrollHint?: boolean) => void;
     isKeyboardNavigating: boolean;
     setHasKeyBeenPressed: () => void;
+    resetKeyboardNavigation: () => void;
 };
 
 /** Owns a SelectionList's keyboard-navigable focused index: wraps useArrowKeyFocusManager, tracks keyboard-nav modality (incl. Tab) */
@@ -52,6 +53,11 @@ function useSelectionListKeyboardFocus({
         }
         hasKeyBeenPressed.current = true;
         setIsKeyboardNavigating(true);
+    };
+
+    const resetKeyboardNavigation = () => {
+        hasKeyBeenPressed.current = false;
+        setIsKeyboardNavigating(false);
     };
 
     // Tab isn't an arrow key, so flip the keyboard-nav flag for it here too.
@@ -91,6 +97,7 @@ function useSelectionListKeyboardFocus({
         setFocusedIndex,
         isKeyboardNavigating,
         setHasKeyBeenPressed,
+        resetKeyboardNavigation,
     };
 }
 
