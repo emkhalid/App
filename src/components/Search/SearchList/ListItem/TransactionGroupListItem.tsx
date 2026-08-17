@@ -154,7 +154,6 @@ function TransactionGroupListItemImpl({
     const isActionLoadingSet = useActionLoadingReportIDs();
     const [cardFeeds] = useOnyx(ONYXKEYS.COLLECTION.SHARED_NVP_PRIVATE_DOMAIN_MEMBER);
     const [conciergeReportID] = useOnyx(ONYXKEYS.CONCIERGE_REPORT_ID);
-    const groupKey = groupItem.keyForList;
 
     let transactions: TransactionListItemType[];
     if (isExpenseReportType) {
@@ -181,7 +180,6 @@ function TransactionGroupListItemImpl({
             ...transactionItem,
             // The whole group being selected implies every child is, even though only the group key is stored
             isSelected: isGroupSelected || selectedTransactionIDsSet.has(transactionItem.transactionID),
-            selectionGroupKey: groupKey,
         }));
     }
 
@@ -234,7 +232,7 @@ function TransactionGroupListItemImpl({
 
     const StyleUtils = useStyleUtils();
     const {isSelected: liveRowSelected} = useRowSelection(item?.keyForList);
-    const isItemSelected = isSelectAllChecked || (liveRowSelected && (isExpenseReportType || transactionsWithoutPendingDelete.length === 0));
+    const isItemSelected = isSelectAllChecked || liveRowSelected;
 
     const animatedHighlightStyle = useAnimatedHighlightStyle({
         shouldHighlight: item?.shouldAnimateInHighlight ?? false,
@@ -312,8 +310,7 @@ function TransactionGroupListItemImpl({
     };
 
     const onPress = (event?: ModifiedMouseEvent) => {
-        const isEmptyGroupWithoutTransactionsQuery = transactions.length === 0 && !groupItem.transactionsQueryJSON;
-        if (isExpenseReportType || isEmptyGroupWithoutTransactionsQuery) {
+        if (isExpenseReportType || transactions.length === 0) {
             onSelectRow(item, transactionPreviewData, event);
         }
         if (!isExpenseReportType) {

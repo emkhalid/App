@@ -17,7 +17,6 @@ const createSetSelectedReportsMock = () => jest.fn<void, [SelectedReports[]]>();
 
 const baseSelectionContext = {
     currentSelectedTransactionReportID: undefined,
-    excludedTransactions: {},
     selectedTransactionIDs: [],
     selectedReports: [],
     shouldTurnOffSelectionMode: false,
