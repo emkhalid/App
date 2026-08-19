@@ -650,6 +650,26 @@ function isIntegrationMessageAction(reportAction: OnyxInputOrEntry<ReportAction>
     return reportAction?.actionName === CONST.REPORT.ACTIONS.TYPE.INTEGRATIONS_MESSAGE;
 }
 
+/**
+ * Whether an export to an accounting integration is still running, i.e. the report shows "started exporting this report to...".
+ *
+ * An export starts as an `EXPORTED_TO_INTEGRATION` action with `pendingAction: ADD` and ends in one of two ways, so both have to
+ * release the button or a failed export would lock it forever and break re-exporting:
+ * - the request is rejected, which leaves the pending action in place and adds `errors` to it
+ * - the export is accepted and fails later in the integration, which arrives as an unreconciled `INTEGRATIONSMESSAGE`
+ */
+function isExportInProgress(reportActions: OnyxEntry<ReportActions> | ReportAction[]): boolean {
+    const reportActionList = Array.isArray(reportActions) ? reportActions : Object.values(reportActions ?? {});
+    const getNewestCreated = (actions: ReportAction[]) => actions.reduce((newest, action) => (action.created > newest ? action.created : newest), '');
+
+    const startedAt = getNewestCreated(
+        reportActionList.filter((action) => isExportIntegrationAction(action) && action.pendingAction === CONST.RED_BRICK_ROAD_PENDING_ACTION.ADD && isEmptyObject(action.errors)),
+    );
+    const resultAt = getNewestCreated(reportActionList.filter((action) => isIntegrationMessageAction(action) && !getOriginalMessage(action)?.result?.reconciled));
+
+    return !!startedAt && resultAt < startedAt;
+}
+
 function isTravelUpdate(reportAction: OnyxInputOrEntry<ReportAction>): reportAction is ReportAction<typeof CONST.REPORT.ACTIONS.TYPE.TRAVEL_UPDATE> {
     return isActionOfType(reportAction, CONST.REPORT.ACTIONS.TYPE.TRAVEL_UPDATE);
 }
@@ -5053,6 +5073,7 @@ export {
     isDeletedParentAction,
     isMemberChangeAction,
     isLeavePolicyAction,
+    isExportInProgress,
     isExportIntegrationAction,
     isIntegrationMessageAction,
     isMessageDeleted,
