@@ -13,6 +13,7 @@ type BaseOnboardingInterestedFeaturesProps = OnboardingInterestedFeaturesProps &
 type Feature = {
     id: string;
     title: string;
+    description?: string;
     icon: IconAsset;
     enabledByDefault?: boolean;
     requiresUpdate?: boolean;
@@ -22,6 +23,7 @@ type Feature = {
 type SectionObject = {
     titleTranslationKey: string;
     items: Feature[];
+    shouldShowDescription?: boolean;
 };
 
 export type {OnboardingInterestedFeaturesProps, BaseOnboardingInterestedFeaturesProps, Feature, SectionObject};

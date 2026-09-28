@@ -5760,12 +5760,29 @@ const staticStyles = (theme: ThemeColors) =>
             backgroundColor: theme.cardBG,
             borderRadius: variables.componentBorderRadiusNormal,
             padding: 16,
-            display: 'flex',
-            flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'space-between',
             flexGrow: 1,
             flexShrink: 1,
+        },
+
+        onboardingInterestedFeaturesItemWide: {
+            flexBasis: '23.25%',
+            maxWidth: '23.25%',
+        },
+
+        onboardingInterestedFeaturesItemNarrow: {
+            flexBasis: '47.25%',
+            maxWidth: '47.25%',
+        },
+
+        onboardingInterestedFeaturesItemSelected: {
+            backgroundColor: theme.selectedOptionBG,
+        },
+
+        onboardingInterestedFeaturesItemSelectionButton: {
+            position: 'absolute',
+            top: 12,
+            left: 12,
         },
 
         checkboxWithLabelCheckboxStyle: {

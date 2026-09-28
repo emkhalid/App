@@ -29,6 +29,8 @@ import type {OnboardingFeatureMapItem} from '@libs/actions/Welcome/OnboardingFea
 import Navigation from '@libs/Navigation/Navigation';
 import {isGroupPolicy, isPolicyAdmin} from '@libs/PolicyUtils';
 
+import variables from '@styles/variables';
+
 import CONST from '@src/CONST';
 import type {TranslationPaths} from '@src/languages/types';
 import ONYXKEYS from '@src/ONYXKEYS';
@@ -68,19 +70,54 @@ function BaseOnboardingInterestedFeatures({shouldUseNativeStyles}: BaseOnboardin
                 case CONST.POLICY.MORE_FEATURES.ARE_WORKFLOWS_ENABLED:
                     return {...feature, title: translate('workspace.moreFeatures.workflows.title'), icon: illustrations.Workflows};
                 case CONST.POLICY.MORE_FEATURES.IS_TRAVEL_ENABLED:
-                    return {...feature, title: translate('workspace.moreFeatures.travel.title'), icon: illustrations.Luggage};
+                    return {
+                        ...feature,
+                        title: translate('workspace.moreFeatures.travel.title'),
+                        description: translate('workspace.moreFeatures.travel.subtitle'),
+                        icon: illustrations.Luggage,
+                    };
                 case CONST.POLICY.MORE_FEATURES.ARE_RULES_ENABLED:
-                    return {...feature, title: translate('workspace.moreFeatures.rules.title'), icon: illustrations.Rules};
+                    return {
+                        ...feature,
+                        title: translate('workspace.moreFeatures.rules.title'),
+                        description: translate('workspace.moreFeatures.rules.subtitle'),
+                        icon: illustrations.Rules,
+                    };
                 case CONST.POLICY.MORE_FEATURES.ARE_DISTANCE_RATES_ENABLED:
-                    return {...feature, title: translate('workspace.moreFeatures.distanceRates.title'), icon: illustrations.Car};
+                    return {
+                        ...feature,
+                        title: translate('workspace.moreFeatures.distanceRates.title'),
+                        description: translate('workspace.moreFeatures.distanceRates.subtitle'),
+                        icon: illustrations.Car,
+                    };
                 case CONST.POLICY.MORE_FEATURES.ARE_EXPENSIFY_CARDS_ENABLED:
-                    return {...feature, title: translate('workspace.moreFeatures.expensifyCard.title'), icon: illustrations.HandCard};
+                    return {
+                        ...feature,
+                        title: translate('workspace.moreFeatures.expensifyCard.title'),
+                        description: translate('workspace.moreFeatures.expensifyCard.subtitle'),
+                        icon: illustrations.HandCard,
+                    };
                 case CONST.POLICY.MORE_FEATURES.ARE_TAGS_ENABLED:
-                    return {...feature, title: translate('workspace.moreFeatures.tags.title'), icon: illustrations.Tag};
+                    return {
+                        ...feature,
+                        title: translate('workspace.moreFeatures.tags.title'),
+                        description: translate('workspace.moreFeatures.tags.subtitle'),
+                        icon: illustrations.Tag,
+                    };
                 case CONST.POLICY.MORE_FEATURES.ARE_PER_DIEM_RATES_ENABLED:
-                    return {...feature, title: translate('workspace.moreFeatures.perDiem.title'), icon: illustrations.PerDiem};
+                    return {
+                        ...feature,
+                        title: translate('workspace.moreFeatures.perDiem.title'),
+                        description: translate('workspace.moreFeatures.perDiem.subtitle'),
+                        icon: illustrations.PerDiem,
+                    };
                 case CONST.POLICY.MORE_FEATURES.IS_TIME_TRACKING_ENABLED:
-                    return {...feature, title: translate('workspace.moreFeatures.timeTracking.title'), icon: illustrations.Clock};
+                    return {
+                        ...feature,
+                        title: translate('workspace.moreFeatures.timeTracking.title'),
+                        description: translate('workspace.moreFeatures.timeTracking.subtitle'),
+                        icon: illustrations.Clock,
+                    };
                 default:
                     return {...feature, title: feature.id, icon: illustrations.FolderOpen};
             }
@@ -162,6 +199,7 @@ function BaseOnboardingInterestedFeatures({shouldUseNativeStyles}: BaseOnboardin
         {
             titleTranslationKey: 'onboarding.interestedFeatures.featureYouMayBeInterestedIn',
             items: mayBeInterestedFeatures,
+            shouldShowDescription: true,
         },
     ];
 
@@ -180,48 +218,49 @@ function BaseOnboardingInterestedFeatures({shouldUseNativeStyles}: BaseOnboardin
         [defaultSelectedFeatures, persistedSelectedFeatures],
     );
 
-    const renderItem = useCallback(
-        (item: Feature) => {
-            const isSelected = selectedFeatures.includes(item.id);
-            return (
-                <PressableWithoutFeedback
-                    key={item.id}
+    function renderItem(item: Feature, shouldShowDescription = false) {
+        const isSelected = selectedFeatures.includes(item.id);
+        const description = shouldShowDescription ? item.description : undefined;
+        const accessibilityLabel = description ? `${item.title}. ${description}` : item.title;
+
+        return (
+            <PressableWithoutFeedback
+                key={item.id}
+                onPress={() => {
+                    handleFeatureSelect(item.id);
+                }}
+                accessibilityLabel={item.title}
+                accessible={false}
+                hoverStyle={isSelected ? undefined : styles.hoveredComponentBG}
+                style={[
+                    styles.onboardingInterestedFeaturesItem,
+                    isSmallScreenWidth ? styles.onboardingInterestedFeaturesItemNarrow : styles.onboardingInterestedFeaturesItemWide,
+                    isSelected && styles.onboardingInterestedFeaturesItemSelected,
+                ]}
+                sentryLabel={CONST.SENTRY_LABEL.ONBOARDING.INTERESTED_FEATURES_ITEM}
+            >
+                <Checkbox
+                    accessibilityLabel={accessibilityLabel}
+                    isChecked={isSelected}
                     onPress={() => {
                         handleFeatureSelect(item.id);
                     }}
-                    accessibilityLabel={item.title}
-                    accessible={false}
-                    hoverStyle={styles.hoveredComponentBG}
-                    style={[
-                        styles.onboardingInterestedFeaturesItem,
-                        // 48.5% handles the gap between columns and keeps items aligned when the scrollbar appears
-                        isSmallScreenWidth ? styles.flexBasis100 : {flexBasis: '48.5%', maxWidth: '48.5%'},
-                    ]}
-                    sentryLabel={CONST.SENTRY_LABEL.ONBOARDING.INTERESTED_FEATURES_ITEM}
-                >
-                    <View style={[styles.flexRow, styles.alignItemsCenter, styles.gap3]}>
-                        <Icon
-                            src={item.icon}
-                            width={48}
-                            height={48}
-                        />
-                        <Text style={[styles.textStrong]}>{item.title}</Text>
-                    </View>
-                    <Checkbox
-                        accessibilityLabel={item.title}
-                        isChecked={isSelected}
-                        onPress={() => {
-                            handleFeatureSelect(item.id);
-                        }}
-                    />
-                </PressableWithoutFeedback>
-            );
-        },
-        [styles, isSmallScreenWidth, selectedFeatures, handleFeatureSelect],
-    );
+                    containerBorderRadius={variables.componentBorderRadiusSmall}
+                    wrapperStyle={styles.onboardingInterestedFeaturesItemSelectionButton}
+                />
+                <Icon
+                    src={item.icon}
+                    width={48}
+                    height={48}
+                />
+                <Text style={[styles.textLabel, styles.textStrong, styles.textAlignCenter, styles.mt2]}>{item.title}</Text>
+                {!!description && <Text style={[styles.textMicroSupporting, styles.textAlignCenter, styles.mt1]}>{description}</Text>}
+            </PressableWithoutFeedback>
+        );
+    }
 
-    const renderSection = useCallback(
-        (section: SectionObject) => (
+    function renderSection(section: SectionObject) {
+        return (
             <Section
                 key={section.titleTranslationKey}
                 containerStyles={[styles.p0, styles.mh0, styles.bgTransparent, styles.noBorderRadius]}
@@ -229,11 +268,10 @@ function BaseOnboardingInterestedFeatures({shouldUseNativeStyles}: BaseOnboardin
                 renderTitle={() => <Text style={[styles.mutedNormalTextLabel, styles.mb3]}>{translate(section.titleTranslationKey as TranslationPaths)}</Text>}
                 subtitleMuted
             >
-                {section.items.map(renderItem)}
+                {section.items.map((item) => renderItem(item, section.shouldShowDescription))}
             </Section>
-        ),
-        [styles, renderItem, translate],
-    );
+        );
+    }
 
     return (
         <ScreenWrapper
