@@ -4,6 +4,10 @@ import Image from '@components/Image';
 import useStyleUtils from '@hooks/useStyleUtils';
 import useThemeStyles from '@hooks/useThemeStyles';
 
+import getPlatform from '@libs/getPlatform';
+
+import CONST from '@src/CONST';
+
 import type {ImageStyle, StyleProp, ViewStyle} from 'react-native';
 
 import React from 'react';
@@ -34,11 +38,11 @@ function AvatarImage({avatarSource, size, shape, imageStyles, imageContainerAddi
         <View style={[imageContainerStyle, StyleUtils.getAvatarBorderStyle(size, shape), imageContainerAdditionalStyles]}>
             {/* eslint-disable-next-line react-native-a11y/has-valid-accessibility-ignores-invert-colors -- Custom Image wrapper does not support this prop. */}
             <Image
-                key={size}
+                key={`${size}_${avatarSource}`}
                 source={{uri: avatarSource}}
                 style={imageStyle}
                 onError={onImageError}
-                cachePolicy="memory-disk"
+                cachePolicy={getPlatform() === CONST.PLATFORM.ANDROID ? 'memory' : 'memory-disk'}
             />
         </View>
     );

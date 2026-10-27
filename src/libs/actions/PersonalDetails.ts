@@ -37,6 +37,7 @@ import type {Address} from '@src/types/onyx/PrivatePersonalDetails';
 
 import type {OnyxEntry, OnyxUpdate} from 'react-native-onyx';
 
+import {Image} from 'expo-image';
 import Onyx from 'react-native-onyx';
 
 type PersonalDetailsFormValues = {
@@ -416,6 +417,9 @@ function updateAvatar(
 
     const parameters: UpdateUserAvatarParams = isDefaultAvatarResult(file) ? {customExpensifyAvatarID: file.customExpensifyAvatarID} : {file};
 
+    Image.clearMemoryCache();
+    Image.clearDiskCache();
+
     API.write(WRITE_COMMANDS.UPDATE_USER_AVATAR, parameters, {
         optimisticData,
         successData,
@@ -522,6 +526,9 @@ function deleteAvatar(currentUserPersonalDetails: Pick<CurrentUserPersonalDetail
             },
         }),
     ];
+
+    Image.clearMemoryCache();
+    Image.clearDiskCache();
 
     API.write(WRITE_COMMANDS.DELETE_USER_AVATAR, null, {
         optimisticData,
