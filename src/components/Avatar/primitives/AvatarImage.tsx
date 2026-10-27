@@ -4,10 +4,6 @@ import Image from '@components/Image';
 import useStyleUtils from '@hooks/useStyleUtils';
 import useThemeStyles from '@hooks/useThemeStyles';
 
-import getPlatform from '@libs/getPlatform';
-
-import CONST from '@src/CONST';
-
 import type {ImageStyle, StyleProp, ViewStyle} from 'react-native';
 
 import React from 'react';
@@ -42,7 +38,7 @@ function AvatarImage({avatarSource, size, shape, imageStyles, imageContainerAddi
                 source={{uri: avatarSource}}
                 style={imageStyle}
                 onError={onImageError}
-                cachePolicy={getPlatform() === CONST.PLATFORM.ANDROID ? 'memory' : 'memory-disk'}
+                cachePolicy="memory-disk"
             />
         </View>
     );
