@@ -1806,8 +1806,8 @@ function getCardConnectionStatusDisplay({
  * @param card the card to read
  * @returns the parsed date, or undefined when there is no usable value
  */
-function parseCardLastScrape(card: Card): Date | undefined {
-    if (!card.lastScrape) {
+function parseCardLastScrape(card?: Card): Date | undefined {
+    if (!card?.lastScrape) {
         return undefined;
     }
     let lastScrapeDate = new Date(`${card.lastScrape.replace(' ', 'T')}Z`);
@@ -1815,6 +1815,34 @@ function parseCardLastScrape(card: Card): Date | undefined {
         lastScrapeDate = new Date(card.lastScrape);
     }
     return Number.isNaN(lastScrapeDate.getTime()) ? undefined : lastScrapeDate;
+}
+
+/**
+ * Returns the localized last updated text for a company card.
+ *
+ * @param card the card to format
+ * @param translate the translate function
+ * @param getLocalDateFromDatetime function to convert a datetime to the user's localized Date
+ * @param isAssigned whether the card is assigned
+ * @returns the formatted string or undefined if unassigned
+ */
+function getCompanyCardLastUpdatedText(
+    card: Card | undefined,
+    translate: LocaleContextProps['translate'],
+    getLocalDateFromDatetime: (datetime?: string) => Date,
+    isAssigned = true,
+): string | undefined {
+    if (!isAssigned || !card) {
+        return undefined;
+    }
+    if (card.isLoadingLastUpdated) {
+        return translate('workspace.moreFeatures.companyCards.updating');
+    }
+    const parsedDate = parseCardLastScrape(card);
+    if (!parsedDate) {
+        return translate('workspace.moreFeatures.companyCards.neverUpdated');
+    }
+    return format(getLocalDateFromDatetime(card.lastScrape), CONST.DATE.FNS_DATE_TIME_FORMAT_STRING);
 }
 
 /**
@@ -2739,6 +2767,8 @@ export {
     getSelectedCardsSharedCurrency,
     getCardHintText,
     resolveTransactionCardFields,
+    parseCardLastScrape,
+    getCompanyCardLastUpdatedText,
 };
 
 export type {CompanyCardFeedIcons, CompanyCardBankIcons, CardProgramKey};

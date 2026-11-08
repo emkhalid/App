@@ -40,6 +40,8 @@ type WorkspaceCompanyCardTableRowData = TableData &
         onRenameName?: (newName: string) => void;
 
         exportAccountTitle?: string;
+        lastUpdatedText?: string;
+        lastUpdatedTimestamp?: number;
         onDismissError?: () => void;
     };
 
@@ -125,7 +127,7 @@ function WorkspaceCompanyCardTableRow({
         return Navigation.navigate(createDynamicRoute(DYNAMIC_ROUTES.WORKSPACE_COMPANY_CARD_DETAILS.getRoute(feedName, cardID.toString())));
     };
 
-    const accessibilityLabel = [memberColumnTitle, formattedCardDetails, formattedCustomCardName, item.exportAccountTitle].filter(Boolean).join(', ');
+    const accessibilityLabel = [memberColumnTitle, formattedCardDetails, formattedCustomCardName, item.lastUpdatedText, item.exportAccountTitle].filter(Boolean).join(', ');
 
     return (
         <Table.Row
@@ -197,6 +199,20 @@ function WorkspaceCompanyCardTableRow({
                                 canEdit={!!item.canEditName && !item.isCardDeleted}
                                 onSave={item.onRenameName}
                                 displayTextStyle={[styles.lh16, styles.optionDisplayName, styles.pre]}
+                            />
+                        </View>
+                    )}
+
+                    {!shouldUseNarrowTableLayout && (
+                        <View
+                            style={[styles.flex1, styles.mnw0, styles.justifyContentCenter]}
+                            {...getCellAccessibilityProps(isTableSemanticsEnabled)}
+                        >
+                            <TextWithTooltip
+                                shouldShowTooltip
+                                numberOfLines={1}
+                                text={item.lastUpdatedText ?? ''}
+                                style={[styles.lh16, styles.optionDisplayName, styles.pre]}
                             />
                         </View>
                     )}
