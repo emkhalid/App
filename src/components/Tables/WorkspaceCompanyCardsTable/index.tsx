@@ -401,19 +401,10 @@ function WorkspaceCompanyCardsTable({
         }
 
         if (activeSorting.columnKey === 'lastUpdated') {
-            if (a.lastUpdatedTimestamp === undefined && b.lastUpdatedTimestamp === undefined) {
-                return cardNameSortingResult;
-            }
+            const aTime = a.lastUpdatedTimestamp ?? 0;
+            const bTime = b.lastUpdatedTimestamp ?? 0;
 
-            if (a.lastUpdatedTimestamp === undefined) {
-                return 1;
-            }
-
-            if (b.lastUpdatedTimestamp === undefined) {
-                return -1;
-            }
-
-            const timestampComparison = a.lastUpdatedTimestamp - b.lastUpdatedTimestamp;
+            const timestampComparison = aTime - bTime;
             return timestampComparison !== 0 ? timestampComparison * orderMultiplier : cardNameSortingResult;
         }
 
