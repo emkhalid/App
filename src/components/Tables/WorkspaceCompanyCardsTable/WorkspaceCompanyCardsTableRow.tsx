@@ -5,7 +5,9 @@ import Icon from '@components/Icon';
 import type {TableData} from '@components/Table';
 import Table from '@components/Table';
 import {getCellAccessibilityProps, shouldUseTableSemantics} from '@components/Table/tableAccessibility';
+import Text from '@components/Text';
 import TextWithTooltip from '@components/TextWithTooltip';
+import Tooltip from '@components/Tooltip';
 
 import {useMemoizedLazyExpensifyIcons} from '@hooks/useLazyAsset';
 import useLocalize from '@hooks/useLocalize';
@@ -41,6 +43,7 @@ type WorkspaceCompanyCardTableRowData = TableData &
 
         exportAccountTitle?: string;
         lastUpdatedText?: string;
+        lastUpdatedTooltip?: string;
         lastUpdatedTimestamp?: number;
         onDismissError?: () => void;
     };
@@ -208,12 +211,23 @@ function WorkspaceCompanyCardTableRow({
                             style={[styles.flex1, styles.mnw0, styles.justifyContentCenter]}
                             {...getCellAccessibilityProps(isTableSemanticsEnabled)}
                         >
-                            <TextWithTooltip
-                                shouldShowTooltip
-                                numberOfLines={1}
-                                text={item.lastUpdatedText ?? ''}
-                                style={[styles.lh16, styles.optionDisplayName, styles.pre]}
-                            />
+                            {item.lastUpdatedTooltip ? (
+                                <Tooltip text={item.lastUpdatedTooltip}>
+                                    <Text
+                                        numberOfLines={1}
+                                        style={[styles.lh16, styles.optionDisplayName, styles.pre]}
+                                    >
+                                        {item.lastUpdatedText ?? ''}
+                                    </Text>
+                                </Tooltip>
+                            ) : (
+                                <TextWithTooltip
+                                    shouldShowTooltip
+                                    numberOfLines={1}
+                                    text={item.lastUpdatedText ?? ''}
+                                    style={[styles.lh16, styles.optionDisplayName, styles.pre]}
+                                />
+                            )}
                         </View>
                     )}
 

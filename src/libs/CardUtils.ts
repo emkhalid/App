@@ -1817,32 +1817,47 @@ function parseCardLastScrape(card?: Card): Date | undefined {
     return Number.isNaN(lastScrapeDate.getTime()) ? undefined : lastScrapeDate;
 }
 
+type CompanyCardLastUpdatedDisplay = {
+    /** The cell text: Spend date format (e.g. "Nov 4" or "Mar 1, 2025"), "Updating...", or "Never" */
+    displayText: string;
+    /** The full local timestamp for the hover tooltip ("yyyy-MM-dd HH:mm:ss"), or undefined */
+    fullTimestamp?: string;
+};
+
 /**
- * Returns the localized last updated text for a company card.
+ * Returns the localized last updated display data for a company card.
  *
  * @param card the card to format
  * @param translate the translate function
  * @param getLocalDateFromDatetime function to convert a datetime to the user's localized Date
+ * @param dateFnsLocale the locale object for date formatting
  * @param isAssigned whether the card is assigned
- * @returns the formatted string or undefined if unassigned
+ * @returns the display object or undefined if unassigned
  */
-function getCompanyCardLastUpdatedText(
+function getCompanyCardLastUpdatedDisplay(
     card: Card | undefined,
     translate: LocaleContextProps['translate'],
     getLocalDateFromDatetime: (datetime?: string) => Date,
+    dateFnsLocale: DateFnsLocale | undefined,
     isAssigned = true,
-): string | undefined {
+): CompanyCardLastUpdatedDisplay | undefined {
     if (!isAssigned || !card) {
         return undefined;
     }
     if (card.isLoadingLastUpdated) {
-        return translate('workspace.moreFeatures.companyCards.updating');
+        return {displayText: translate('workspace.moreFeatures.companyCards.updating')};
     }
     const parsedDate = parseCardLastScrape(card);
     if (!parsedDate) {
-        return translate('workspace.moreFeatures.companyCards.neverUpdated');
+        return {displayText: translate('workspace.moreFeatures.companyCards.neverUpdated')};
     }
-    return format(getLocalDateFromDatetime(card.lastScrape), CONST.DATE.FNS_DATE_TIME_FORMAT_STRING);
+
+    const localDate = getLocalDateFromDatetime(card.lastScrape);
+    const isPastYear = localDate.getFullYear() !== getLocalDateFromDatetime().getFullYear();
+    const displayText = format(localDate, isPastYear ? CONST.DATE.MONTH_DAY_YEAR_ABBR_FORMAT : CONST.DATE.MONTH_DAY_ABBR_FORMAT, {locale: dateFnsLocale});
+    const fullTimestamp = format(localDate, CONST.DATE.FNS_DATE_TIME_FORMAT_STRING);
+
+    return {displayText, fullTimestamp};
 }
 
 /**
@@ -2768,7 +2783,7 @@ export {
     getCardHintText,
     resolveTransactionCardFields,
     parseCardLastScrape,
-    getCompanyCardLastUpdatedText,
+    getCompanyCardLastUpdatedDisplay,
 };
 
-export type {CompanyCardFeedIcons, CompanyCardBankIcons, CardProgramKey};
+export type {CompanyCardFeedIcons, CompanyCardBankIcons, CardProgramKey, CompanyCardLastUpdatedDisplay};

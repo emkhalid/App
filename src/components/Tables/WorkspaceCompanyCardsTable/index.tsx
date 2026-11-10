@@ -21,7 +21,7 @@ import useThemeStyles from '@hooks/useThemeStyles';
 
 import {clearCompanyCardErrorField, resetFailedWorkspaceCompanyCardUnassignment} from '@libs/actions/CompanyCards';
 import {renameCompanyCardInline} from '@libs/actions/Policy/InlineEdit';
-import {formatMaskedCardName, getCompanyCardCustomName, getCompanyCardLastUpdatedText, getDefaultCardName, parseCardLastScrape} from '@libs/CardUtils';
+import {formatMaskedCardName, getCompanyCardCustomName, getCompanyCardLastUpdatedDisplay, getDefaultCardName, parseCardLastScrape} from '@libs/CardUtils';
 import {getLatestErrorField} from '@libs/ErrorUtils';
 import {getConnectedIntegration} from '@libs/PolicyUtils';
 import showInlineEditError from '@libs/showInlineEditError';
@@ -102,7 +102,7 @@ function WorkspaceCompanyCardsTable({
 }: WorkspaceCompanyCardsTableProps) {
     const styles = useThemeStyles();
     const {isOffline} = useNetwork();
-    const {translate, localeCompare, formatPhoneNumber, getLocalDateFromDatetime} = useLocalize();
+    const {translate, localeCompare, formatPhoneNumber, getLocalDateFromDatetime, dateFnsLocale} = useLocalize();
     const {shouldUseNarrowLayout, isMediumScreenWidth} = useResponsiveLayout();
     const tableRef = useRef<TableHandle<WorkspaceCompanyCardTableItemData, CompanyCardsTableColumnKey>>(null);
 
@@ -309,7 +309,7 @@ function WorkspaceCompanyCardsTable({
                   const hasVisibleCardErrors = !isEmptyObject(cardErrors ?? {});
                   const rowErrors = hasTransactionStartDateErrors ? {...cardErrors, ...transactionStartDateErrors} : cardErrors;
 
-                  const lastUpdatedText = getCompanyCardLastUpdatedText(assignedCard, translate, getLocalDateFromDatetime, isAssigned);
+                  const lastUpdatedDisplay = getCompanyCardLastUpdatedDisplay(assignedCard, translate, getLocalDateFromDatetime, dateFnsLocale, isAssigned);
                   const lastScrapeDate = isAssigned ? parseCardLastScrape(assignedCard) : undefined;
 
                   return {
@@ -322,7 +322,8 @@ function WorkspaceCompanyCardsTable({
                       isAssigned,
                       assignedCard,
                       cardholder,
-                      lastUpdatedText,
+                      lastUpdatedText: lastUpdatedDisplay?.displayText,
+                      lastUpdatedTooltip: lastUpdatedDisplay?.fullTimestamp,
                       lastUpdatedTimestamp: lastScrapeDate?.getTime(),
                       // Unassigned cards have no details page and so no Accounting section to match, hence no title.
                       exportAccountTitle: shouldShowExportAccountColumn && assignedCard ? getCardExportAccountTitle(cardExportSettings, assignedCard) : undefined,
