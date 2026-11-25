@@ -19,10 +19,10 @@ import type {StyleProp, ViewStyle} from 'react-native';
 
 import {useIsFocused} from '@react-navigation/core';
 import {willAlertModalBecomeVisibleSelector} from '@selectors/Modal';
-import React, {useRef, useState} from 'react';
-import {View} from 'react-native';
-import {useReanimatedKeyboardAnimation} from 'react-native-keyboard-controller';
-import Animated, {useAnimatedStyle} from 'react-native-reanimated';
+import React, {useContext, useEffect, useRef, useState} from 'react';
+import {Dimensions, RootTagContext, View} from 'react-native';
+import {KeyboardControllerNative, useReanimatedKeyboardAnimation} from 'react-native-keyboard-controller';
+import Animated, {useAnimatedStyle, useSharedValue} from 'react-native-reanimated';
 
 type PopoverComponentProps = {
     isExpanded: boolean;
@@ -73,11 +73,43 @@ function FilterPopupButton({
     const styles = useThemeStyles();
     const {paddingBottom: safeAreaPaddingBottom} = useSafeAreaPaddings(true);
     const {height: keyboardOffset} = useReanimatedKeyboardAnimation();
-    const keyboardRoomStyle = useAnimatedStyle(() => ({
-        paddingBottom: Math.max(safeAreaPaddingBottom, -keyboardOffset.get()),
-    }));
-    const StyleUtils = useStyleUtils();
+    const rootTag = useContext(RootTagContext);
+    const rootScreenY = useSharedValue(0);
     const {windowHeight} = useWindowDimensions();
+
+    useEffect(() => {
+        if (!rootTag || !KeyboardControllerNative?.viewPositionInWindow) {
+            return;
+        }
+
+        KeyboardControllerNative.viewPositionInWindow(rootTag)
+            .then((pos) => {
+                if (!pos || typeof pos.y !== 'number') {
+                    return;
+                }
+                rootScreenY.set(pos.y);
+            })
+            .catch(() => {});
+    }, [rootTag, rootScreenY, windowHeight]);
+
+    const keyboardRoomStyle = useAnimatedStyle(() => {
+        const keyboardHeight = -keyboardOffset.get();
+        if (keyboardHeight <= 0) {
+            return {
+                paddingBottom: safeAreaPaddingBottom,
+            };
+        }
+
+        const screenHeight = Dimensions.get('screen').height;
+        const keyboardTop = screenHeight - keyboardHeight;
+        const appBottom = rootScreenY.get() + windowHeight;
+        const keyboardOverlap = Math.max(0, appBottom - keyboardTop);
+
+        return {
+            paddingBottom: Math.max(safeAreaPaddingBottom, keyboardOverlap),
+        };
+    });
+    const StyleUtils = useStyleUtils();
     const triggerRef = useRef<ComponentRef<typeof View> | null>(null);
     const anchorRef = useRef<ComponentRef<typeof View> | null>(null);
     const [isOverlayVisible, setIsOverlayVisible] = useState(false);
