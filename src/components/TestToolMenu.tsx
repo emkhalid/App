@@ -15,6 +15,7 @@ import Navigation from '@libs/Navigation/Navigation';
 import variables from '@styles/variables';
 
 import {setShouldFailAllRequests, setShouldForceOffline, setShouldSimulatePoorConnection} from '@userActions/Network';
+import {reconnect} from '@userActions/Reconnect';
 import {expireSessionWithDelay, invalidateAuthToken, invalidateCredentials} from '@userActions/Session';
 import {getBackToParam} from '@userActions/TestTool';
 import {setIsDebugModeEnabled, setShouldHideEnvironmentBadge, setShouldShowBranchNameInTitle} from '@userActions/User';
@@ -130,12 +131,15 @@ function TestToolMenu({serverPageRoute}: TestToolMenuProps) {
                         </TestToolRow>
                     )}
 
-                    {/* Instantly invalidates a user's local authToken. Useful for testing flows related to reauthentication. */}
+                    {/* Instantly invalidates a user's local authToken and triggers a reconnect so reauthentication runs immediately. */}
                     <TestToolRow title={translate('initialSettingsPage.troubleshoot.authenticationStatus')}>
                         <Button
                             sentryLabel={CONST.SENTRY_LABEL.TEST_TOOL_MENU.INVALIDATE_AUTH_TOKEN}
                             size={CONST.BUTTON_SIZE.SMALL}
-                            onPress={() => invalidateAuthToken()}
+                            onPress={() => {
+                                invalidateAuthToken();
+                                reconnect();
+                            }}
                         >
                             <Button.Text>{translate('initialSettingsPage.troubleshoot.invalidate')}</Button.Text>
                         </Button>

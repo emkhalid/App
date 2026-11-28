@@ -14,10 +14,10 @@ function getStateToResetAfterLogout(rootState: NavigationState | undefined): Nav
         return undefined;
     }
 
-    // ValidateLogin's /v/ code is spent by logout; keeping it strands the user. Reset to
-    // TAB_NAVIGATOR — this runs only post-logout (NavigationRoot gates on !authenticated), when
-    // PublicScreens is mounted and TAB_NAVIGATOR (SignInPage) is its top-level route.
-    if (lastRoute.name === SCREENS.VALIDATE_LOGIN) {
+    // ValidateLogin's /v/ code is spent by logout and TestToolsModalNavigator is also registered in PublicScreens;
+    // keeping either strands the user. Reset to TAB_NAVIGATOR — this runs only post-logout (NavigationRoot gates on
+    // !authenticated), when PublicScreens is mounted and TAB_NAVIGATOR (SignInPage) is its top-level route.
+    if (lastRoute.name === SCREENS.VALIDATE_LOGIN || lastRoute.name === NAVIGATORS.TEST_TOOLS_MODAL_NAVIGATOR) {
         return {index: 0, routes: [{name: NAVIGATORS.TAB_NAVIGATOR}]};
     }
 
