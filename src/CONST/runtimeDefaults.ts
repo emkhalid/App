@@ -98,6 +98,8 @@ const CONST_RUNTIME_DEFAULTS: ConstRuntime = {
         'Members_Move_To_Group',
         'Workspace_Members_Role',
         'PreMountBuffer',
+        'TestToolsModal_Root',
+        'TestToolsModal_Server',
         'Multifactor_Authentication_Validate_Code',
         'Multifactor_Authentication_Outcome_Success',
         'Multifactor_Authentication_Outcome_Failure',
